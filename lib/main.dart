@@ -1,3 +1,4 @@
+import 'package:expense_app/widgets/chart.dart';
 import 'package:expense_app/widgets/new_transaction.dart';
 import 'package:expense_app/widgets/transaction_list.dart';
 import 'package:flutter/material.dart';
@@ -17,19 +18,25 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.purple,
         accentColor: Colors.amber,
         fontFamily: 'Quicksand',
-        textTheme: ThemeData.light().textTheme.copyWith(headline6: TextStyle(
+        textTheme: ThemeData
+            .light()
+            .textTheme
+            .copyWith(headline6: TextStyle(
           fontFamily: 'Quicksand',
           fontWeight: FontWeight.bold,
           fontSize: 18,
         )),
         appBarTheme: AppBarTheme(
-          textTheme: ThemeData.light().textTheme.copyWith(
-                headline6: TextStyle(
-                  fontFamily: 'OpenSans',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold
-                ),
-              ),
+          textTheme: ThemeData
+              .light()
+              .textTheme
+              .copyWith(
+            headline6: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold
+            ),
+          ),
         ),
       ),
       home: MyHomePage(),
@@ -53,11 +60,21 @@ class _MyHomePageState extends State<MyHomePage> {
     // Transaction(id: 't2', title: 'Weekly groceries', amount: 16.53, date: DateTime.now()),
   ];
 
-  void _addNewTransaction(String title, double amount) {
+  List<Transaction> get _recentTransactions {
+    return _userTransactions.where((tx) {
+      return tx.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
+  }
+
+  void _addNewTransaction(String title, double amount, DateTime chosenDate) {
     final newTx = Transaction(
       title: title,
       amount: amount,
-      date: DateTime.now(),
+      date: chosenDate,
       id: DateTime.now().toString(),
     );
     setState(() {
@@ -76,6 +93,12 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       },
     );
+  }
+
+  void _deleteTransaction(String id){
+    setState(() {
+      _userTransactions.removeWhere((tx) =>  tx.id == id);
+    });
   }
 
   @override
@@ -97,18 +120,8 @@ class _MyHomePageState extends State<MyHomePage> {
           // mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: double.infinity,
-              child: Card(
-                child: Container(
-                  color: Colors.blue,
-                  width: 100,
-                  child: Text('Chart'),
-                ),
-                elevation: 5,
-              ),
-            ),
-            TransactionList(transactionList: _userTransactions),
+            Chart(recentTransactions: _recentTransactions,),
+            TransactionList(transactionList: _userTransactions, deleteTx: _deleteTransaction),
           ],
         ),
       ),
